@@ -1,0 +1,42 @@
+admin:
+  access_log_path: /dev/stdout
+  address:
+    socket_address: { address: 127.0.0.1, port_value: 9901 }
+
+stats_sinks:
+  - name: envoy.dog_statsd
+    config:
+      tcp_cluster_name: statsd
+
+static_resources:
+  listeners:
+  - name: listener_0
+    address:
+      socket_address: { address: 127.0.0.1, port_value: 9211 }
+    filter_chains:
+    - filters:
+      - name: envoy.http_connection_manager
+        config:
+          stat_prefix: egress_http
+          codec_type: AUTO
+          route_config:
+            name: local_route
+            virtual_hosts:
+            - name: local_service
+              domains: ["app"]
+              routes:
+              - match: { prefix: "/" }
+                route: { cluster: some_service }
+          http_filters:
+          - name: envoy.router
+  clusters:
+  - name: some_service
+    connect_timeout: 0.25s
+    type: STATIC
+    lb_policy: ROUND_ROBIN
+    hosts: [{ socket_address: { address: 127.0.0.1, port_value: 4000 }}]
+  - name: statsd
+    connect_timeout: 1s
+    type: STATIC
+    lb_policy: ROUND_ROBIN
+    hosts: [{ socket_address: { address: 127.0.0.1, port_value: 2000 }}]

@@ -45,10 +45,21 @@ envoy_cc_library(
     ],
     deps = [
         "dog_statsd_lib",
+        "dog_statsd_config_cc_proto",
         "@envoy//include/envoy/registry",
         "@envoy//source/common/config:well_known_names",
         "@envoy//source/common/network:address_lib",
         "@envoy//source/common/network:resolver_lib",
         "@envoy//source/server:configuration_lib",
     ],
+)
+
+cc_proto_library(
+    name = "dog_statsd_config_cc_proto",
+    deps = ["dog_statsd_config_proto"],
+)
+
+proto_library(
+    name = "dog_statsd_config_proto",
+    srcs = ["dog_statsd_config.proto"],
 )
